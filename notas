@@ -1,9 +1,0 @@
-docker run --name ed_machina -e POSTGRES_PASSWORD=password -d -p 5432:5432 postgres:alpine
-
-
-psql: 
-db: ed_machina_db
-user: usr 
-password: password
-
-

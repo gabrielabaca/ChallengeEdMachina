@@ -1,6 +1,6 @@
 from typing import List
 from database import engine, Base, SessionLocal
-from schemas import BaseAlumnos, BaseCarreras, BaseCursadas, BaseMaterias
+from schemas import BaseAlumnos, BaseCarreras, BaseCursadas, BaseMaterias, CreateAlumno, CreateCarrera, CreateCursada, CreateMateria
 from sqlalchemy.orm import Session
 import models as models
 
@@ -19,7 +19,7 @@ def get_db():
 
 ## METODOS PARA LA TABLA ALUMNOS
 
-async def create_alumnos(alumno: BaseAlumnos, db: Session) -> BaseAlumnos:
+async def create_alumnos(alumno: CreateAlumno, db: Session) -> BaseAlumnos:
     alumno = models.Alumnos(**alumno.dict())
     db.add(alumno)
     db.commit()
@@ -27,9 +27,9 @@ async def create_alumnos(alumno: BaseAlumnos, db: Session) -> BaseAlumnos:
 
     return BaseAlumnos.from_orm(alumno)
 
-async def get_all_alumnos(db: Session) -> List[BaseAlumnos]:
+async def get_all_alumnos(db: Session):
     alumnos = db.query(models.Alumnos).all()
-    return list(map(BaseAlumnos.from_orm, alumnos))
+    return list(alumnos)
 
 async def get_alumno_byid(id: int, db: Session) -> BaseAlumnos:
     alumno = db.query(models.Alumnos).filter(models.Alumnos.id == id).first()
@@ -57,7 +57,7 @@ async def update_alumnos(alumno: models.Alumnos, data: BaseAlumnos, db: Session)
 
 ## METODOS PARA LA TABLA CARRERAS
 
-async def create_carreras(carrera: BaseCarreras, db: Session) -> BaseCarreras:
+async def create_carreras(carrera: CreateCarrera, db: Session) -> BaseCarreras:
     carrera = models.Carreras(**carrera.dict())
     db.add(carrera)
     db.commit()
@@ -92,7 +92,7 @@ async def update_carrera(carreras: models.Carreras, data: BaseCarreras, db: Sess
 
 ## METODOS PARA LA TABLA MATERIAS
 
-async def create_materias(materia: BaseMaterias, db: Session) -> BaseMaterias:
+async def create_materias(materia: CreateMateria, db: Session) -> BaseMaterias:
     materia = models.Materias(**materia.dict())
     db.add(materia)
     db.commit()
@@ -126,7 +126,7 @@ async def update_materias(materias: models.Materias, data: BaseMaterias, db: Ses
 
 ## METODOS PARA LA TABLA CURSADAS
 
-async def create_cursadas(cursada: BaseCursadas, db: Session) -> BaseCursadas:
+async def create_cursadas(cursada: CreateCursada, db: Session) -> BaseCursadas:
     cursada = models.Cursadas(**cursada.dict())
     db.add(cursada)
     db.commit()
@@ -137,6 +137,10 @@ async def create_cursadas(cursada: BaseCursadas, db: Session) -> BaseCursadas:
 async def get_all_cursadas(db: Session) -> list[BaseCursadas]:
     cursadas = db.query(models.Cursadas).all()
     return list(map(BaseCursadas.from_orm, cursadas))
+
+async def get_cursadas_byalumno(id: int, db:Session) -> BaseCursadas:
+    cursada = db.query(models.Cursadas).filter(models.Cursadas.id_alumnos == id)
+    return list(cursada)
 
 async def get_cursadas_byid(id: int, db: Session) -> BaseCursadas:
     cursada = db.query(models.Cursadas).filter(models.Cursadas.id == id).first()
