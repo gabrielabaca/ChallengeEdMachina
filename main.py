@@ -242,3 +242,10 @@ def create_seed_tables():
     srv.seed_db()
 
     return 'Success'
+
+@app.get('/create_tables')
+def create_seed_tables():
+    print('Creando Tablas')
+    srv.create_tables()
+
+    return 'Success'
