@@ -10,6 +10,7 @@ class Alumnos(Base):
     full_name = Column(String)
     last_name = Column(String)
     date_birth = Column(DateTime)
+    date_created = Column(DateTime, default=dt.datetime.utcnow)
     phone_number = Column(Integer)
     address = Column(String)
     email = Column(String, unique=True, index=True)
@@ -18,7 +19,6 @@ class Carreras(Base):
     __tablename__ = 'carreras'
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String)
-    materias = Column(Integer)
     description = Column(String)
 
 class Materias(Base):

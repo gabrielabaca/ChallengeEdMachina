@@ -48,16 +48,21 @@ async def get_alumnos(db = Depends(srv.get_db)):
 
     alumnos = []
     for x in await srv.get_all_alumnos(db=db):
+
+        cursadas=await srv.get_cursadas_byalumno(id=x.id, db=db)
         alumnos.append(BaseAlumnos(
             id=x.id, 
-            full_name=x.full_name, 
+            full_name=x.full_name,  
             last_name=x.last_name, 
             date_birth=x.date_birth,    
             phone_number=x.phone_number,
             address=x.address,
             email=x.email,
-            date_at=calc_time(x.date_birth)
-            ))
+            date_created=x.date_created,
+            date_at=calc_time(x.date_created),
+            cursadas={cursada.id:{'carrera':(await srv.get_carreras_byid(id=cursada.id_carreras,db=db)).name, 'materia':(await srv.get_materias_byid(id=cursada.id_materias,db=db)).name} for cursada in cursadas}
+            )
+            )
     
     return alumnos
 
@@ -77,7 +82,7 @@ async def get_alumno(id: int ,db = Depends(srv.get_db)):
             phone_number=alumno.phone_number,
             address=alumno.address,
             email=alumno.email,
-            date_at=calc_time(alumno.date_birth),
+            date_at=calc_time(alumno.date_created),
             cursadas={x.id:{'carrera':(await srv.get_carreras_byid(id=x.id_carreras,db=db)).name, 'materia':(await srv.get_materias_byid(id=x.id_materias,db=db)).name} for x in cursadas}
             )
 
@@ -85,7 +90,7 @@ async def get_alumno(id: int ,db = Depends(srv.get_db)):
 
 @app.delete('/alumnos/{id}', tags=['alumnos'])
 async def del_alumno(id: int ,db = Depends(srv.get_db)):
-    alumno = await srv.get_alumno_byid(db, id=id)
+    alumno = await srv.get_alumno_byid(id=id,db=db)
 
     if alumno is None:
         raise HTTPException(status_code=404, detail='Alumno not found')
@@ -228,3 +233,12 @@ async def update_cursadas(id: int, data: BaseCursadas, db = Depends(srv.get_db))
         raise HTTPException(status_code=404, detail='Cursada not found')
 
     return await srv.update_cursadas(cursadas=cursada, data=data, db=db)
+
+@app.get('/create_seed_tables')
+def create_seed_tables():
+    print('Creando Tablas')
+    srv.create_tables()
+    print('Seed DB')
+    srv.seed_db()
+
+    return 'Success'

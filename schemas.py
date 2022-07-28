@@ -13,6 +13,7 @@ class BaseAlumnos(BaseModel):
     address: str
     email: str
     date_at: Optional[str]
+    date_created: Optional[datetime]
     cursadas: Optional[dict]
 
     class Config:
@@ -32,7 +33,6 @@ class CreateAlumno(BaseModel):
 class BaseCarreras(BaseModel):
     id: Optional[int]
     name: str
-    materias: int
     description: str
 
     class Config:
