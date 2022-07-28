@@ -9,7 +9,7 @@ Challenge BackEnd con fastapi & postgres
 docker-compose up --build
 `` 
 
-#### Puede crear las tablas con data de ejemplo desde el endpoint
+#### Puede crear las tablas con data de ejemplo desde el endpoint:
 
 `` 
 ** /create_seed_tables **
@@ -42,7 +42,7 @@ docker-compose up --build
 
 ## Pruebas:
 
-Ingresar a /docs
+Ingresar a:
 `` 
 /docs
 `` 

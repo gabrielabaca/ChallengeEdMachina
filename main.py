@@ -27,6 +27,7 @@ tags_metadata = [
 
 app = FastAPI(title='EdMachina Challenge',openapi_tags=tags_metadata)
 
+
 def calc_time(date: datetime):
     segundos = (date - datetime.now()).total_seconds() * -1
     dias = int(segundos / 60 / 60 / 24)
@@ -234,6 +235,8 @@ async def update_cursadas(id: int, data: BaseCursadas, db = Depends(srv.get_db))
 
     return await srv.update_cursadas(cursadas=cursada, data=data, db=db)
 
+
+## Crear tablas y Data de ejemplo
 @app.get('/create_seed_tables')
 def create_seed_tables():
     print('Creando Tablas')
@@ -243,6 +246,7 @@ def create_seed_tables():
 
     return 'Success'
 
+## Crear Tablas
 @app.get('/create_tables')
 def create_seed_tables():
     print('Creando Tablas')
