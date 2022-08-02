@@ -41,7 +41,6 @@ class BaseCarreras(BaseModel):
 class CreateCarrera(BaseModel):
     name: str
     description:str
-    materias:int = 0
     class Config:
         orm_mode = True
 

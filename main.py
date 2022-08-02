@@ -1,4 +1,3 @@
-from datetime import datetime
 from fastapi import FastAPI, Depends, HTTPException
 from typing import List
 from schemas import BaseAlumnos, BaseCarreras, BaseCursadas, BaseMaterias, CreateAlumno, CreateCarrera, CreateCursada, CreateMateria
@@ -28,16 +27,6 @@ tags_metadata = [
 app = FastAPI(title='EdMachina Challenge',openapi_tags=tags_metadata)
 
 
-def calc_time(date: datetime):
-    segundos = (date - datetime.now()).total_seconds() * -1
-    dias = int(segundos / 60 / 60 / 24)
-    segundos -= dias * 60 * 60 * 24
-    horas = int(segundos / 60 / 60)
-    segundos -= horas*60*60
-    minutos = int(segundos/60)
-    segundos -= minutos*60
-    return f"{dias} días, {horas} horas, {minutos} minutos y {round(segundos)} segundos"
-
 ## METODOS PARA ALUMNOS
 @app.post('/alumnos', response_model=BaseAlumnos, tags=['alumnos'])
 async def create_alumno(alumno: CreateAlumno, db = Depends(srv.get_db)):
@@ -47,67 +36,23 @@ async def create_alumno(alumno: CreateAlumno, db = Depends(srv.get_db)):
 @app.get('/alumnos', response_model=List[BaseAlumnos], tags=['alumnos'])
 async def get_alumnos(db = Depends(srv.get_db)):
 
-    alumnos = []
-    for x in await srv.get_all_alumnos(db=db):
-
-        cursadas=await srv.get_cursadas_byalumno(id=x.id, db=db)
-        alumnos.append(BaseAlumnos(
-            id=x.id, 
-            full_name=x.full_name,  
-            last_name=x.last_name, 
-            date_birth=x.date_birth,    
-            phone_number=x.phone_number,
-            address=x.address,
-            email=x.email,
-            date_created=x.date_created,
-            date_at=calc_time(x.date_created),
-            cursadas={cursada.id:{'carrera':(await srv.get_carreras_byid(id=cursada.id_carreras,db=db)).name, 'materia':(await srv.get_materias_byid(id=cursada.id_materias,db=db)).name} for cursada in cursadas}
-            )
-            )
-    
-    return alumnos
+    return await srv.get_all_alumnos(db=db)
 
 @app.get('/alumnos/{id}', response_model=BaseAlumnos, tags=['alumnos'])
 async def get_alumno(id: int ,db = Depends(srv.get_db)):
-    alumno = await srv.get_alumno_byid(id=id, db=db)
 
-    if alumno is None:
-        raise HTTPException(status_code=404, detail='Alumno not found')
-
-    cursadas=await srv.get_cursadas_byalumno(id=id, db=db)
-    res = BaseAlumnos(
-            id=alumno.id, 
-            full_name=alumno.full_name, 
-            last_name=alumno.last_name, 
-            date_birth=alumno.date_birth,    
-            phone_number=alumno.phone_number,
-            address=alumno.address,
-            email=alumno.email,
-            date_at=calc_time(alumno.date_created),
-            cursadas={x.id:{'carrera':(await srv.get_carreras_byid(id=x.id_carreras,db=db)).name, 'materia':(await srv.get_materias_byid(id=x.id_materias,db=db)).name} for x in cursadas}
-            )
-
-    return res
+    return await srv.get_alumno_byid(id=id,db=db)
 
 @app.delete('/alumnos/{id}', tags=['alumnos'])
 async def del_alumno(id: int ,db = Depends(srv.get_db)):
-    alumno = await srv.get_alumno_byid(id=id,db=db)
 
-    if alumno is None:
-        raise HTTPException(status_code=404, detail='Alumno not found')
+    return await srv.delete_alumno(id=id, db=db)
 
-    await srv.delete_alumno(alumno=alumno, db=db)
-
-    return 'Success'
 
 @app.put('/alumnos/{id}', response_model=BaseAlumnos, tags=['alumnos'])
 async def update_alumno(id: int, data: BaseAlumnos, db = Depends(srv.get_db)):
-    alumno = await srv.get_alumno_byid(id=id, db=db)
-
-    if alumno is None:
-        raise HTTPException(status_code=404, detail='Alumno not found')
-
-    return await srv.update_alumnos(alumno=alumno, data=data, db=db)
+    
+    return await srv.update_alumnos(id=id, data=data, db=db)
 
 
 ## METODOS PARA CARRERAS
@@ -123,31 +68,20 @@ async def get_carreras(db = Depends(srv.get_db)):
 
 @app.get('/carreras/{id}', response_model=BaseCarreras, tags=['carreras'])
 async def get_carrera(id: int ,db = Depends(srv.get_db)):
-    carrera = await srv.get_carreras_byid(id=id, db=db)
 
-    if carrera is None:
-        raise HTTPException(status_code=404, detail='Carrera not found')
+    return await srv.get_carreras_byid(id=id, db=db)
 
-    return carrera
 
 @app.delete('/carreras/{id}', tags=['carreras'])
 async def del_carrera(id: int ,db = Depends(srv.get_db)):
-    carrera = await srv.get_carreras_byid(id=id, db=db)
+    
+    return await srv.delete_carrera(id=id, db=db)
 
-    if carrera is None:
-        raise HTTPException(status_code=404, detail='Carrera not found')
-
-    await srv.delete_carrera(carrera=carrera, db=db)
-
-    return 'Success'
 
 @app.put('/carreras/{id}', tags=['carreras'])
 async def update_carrera(id: int, data: BaseCarreras, db = Depends(srv.get_db)):
-    carrera = await srv.get_carreras_byid(id=id, db=db)
-    if carrera is None:
-        raise HTTPException(status_code=404, detail='Carrera not found')
-
-    return await srv.update_carrera(carreras=carrera, data=data, db=db)
+    
+    return await srv.update_carrera(id=id, data=data, db=db)
 
 
 
@@ -164,33 +98,18 @@ async def get_materias(db = Depends(srv.get_db)):
 
 @app.get('/materias/{id}', response_model=BaseMaterias, tags=['materias'])
 async def get_materia(id: int ,db = Depends(srv.get_db)):
-    materia = await srv.get_materias_byid(id=id, db=db)
 
-    if materia is None:
-        raise HTTPException(status_code=404, detail='Materia not found')
-
-    return materia
+    return await srv.get_materias_byid(id=id, db=db)
 
 @app.delete('/materias/{id}', tags=['materias'])
 async def del_materias(id: int ,db = Depends(srv.get_db)):
-    materias = await srv.get_materias_byid(id=id, db=db)
 
-    if materias is None:
-        raise HTTPException(status_code=404, detail='Materia not found')
-
-    await srv.delete_materias(materia=materias, db=db)
-
-    return 'Success'
+    return await srv.delete_materias(id=id, db=db)
 
 @app.put('/materias/{id}', tags=['materias'])
 async def update_materias(id: int, data: BaseMaterias, db = Depends(srv.get_db)):
-    materias = await srv.get_materias_byid(id=id, db=db)
-    if materias is None:
-        raise HTTPException(status_code=404, detail='Materia not found')
 
-    return await srv.update_materias(materias=materias, data=data, db=db)
-
-
+    return await srv.update_materias(id=id, data=data, db=db)
 
 
 ## METODOS PARA CURSADAS
@@ -202,38 +121,22 @@ async def create_cursadas(cursada: CreateCursada, db: Session = Depends(srv.get_
 @app.get('/cursadas', response_model=List[BaseCursadas], tags=['cursadas'])
 async def get_cursadas(db = Depends(srv.get_db)):
 
-    cursadas = await srv.get_all_cursadas(db=db)
-    alumno = (await srv.get_alumno_byid(id=cursadas[0].id_alumnos,db=db)).full_name
-    print(alumno)
     return await srv.get_all_cursadas(db=db)
 
 @app.get('/cursadas/{id}', response_model=BaseCursadas, tags=['cursadas'])
 async def get_cursada(id: int ,db = Depends(srv.get_db)):
-    cursada = await srv.get_cursadas_byid(id=id, db=db)
 
-    if cursada is None:
-        raise HTTPException(status_code=404, detail='Cursada not found')
-
-    return cursada
+    return await srv.get_cursadas_byid(id=id, db=db)
 
 @app.delete('/cursadas/{id}', tags=['cursadas'])
 async def del_cursada(id: int ,db = Depends(srv.get_db)):
-    cursada = await srv.get_cursadas_byid(id=id, db=db)
 
-    if cursada is None:
-        raise HTTPException(status_code=404, detail='Cursada not found')
-
-    await srv.delete_cursada(cursada=cursada, db=db)
-
-    return 'Success'
+    return await srv.delete_cursada(id=id, db=db)
 
 @app.put('/cursadas/{id}', tags=['cursadas'])
 async def update_cursadas(id: int, data: BaseCursadas, db = Depends(srv.get_db)):
-    cursada = await srv.get_materias_byid(id=id, db=db)
-    if cursada is None:
-        raise HTTPException(status_code=404, detail='Cursada not found')
-
-    return await srv.update_cursadas(cursadas=cursada, data=data, db=db)
+    
+    return await srv.update_cursadas(id=id, data=data, db=db)
 
 
 ## Crear tablas y Data de ejemplo

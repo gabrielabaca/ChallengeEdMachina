@@ -34,9 +34,9 @@ class Materias(Base):
 class Cursadas(Base):
     __tablename__ = 'cursadas'
     id = Column(Integer, primary_key=True, index=True)
-    id_alumnos = Column(Integer, ForeignKey('alumnos.id'))
-    id_carreras = Column(Integer, ForeignKey('carreras.id'))
-    id_materias = Column(Integer, ForeignKey('materias.id'))
+    id_alumnos = Column(Integer, ForeignKey('alumnos.id', ondelete='CASCADE'))
+    id_carreras = Column(Integer, ForeignKey('carreras.id', ondelete='CASCADE'))
+    id_materias = Column(Integer, ForeignKey('materias.id', ondelete='CASCADE'))
     dt_inscripcion = Column(DateTime, default=dt.datetime.utcnow)
     cursada_at = Column(Integer, default=1) ## CANTIDAD DE VECES CURSADA
 
