@@ -135,7 +135,7 @@ async def get_all_alumnos(db:Session):
     
     alumnos = []
     for x in db.query(models.Alumnos).all():
-        cursadas=await get_cursadas_byalumno(id=x.id, db=db)
+        cursadas = db.query(models.Cursadas).filter(models.Cursadas.id_alumnos == x.id)
         alumnos.append(BaseAlumnos(
             id=x.id, 
             full_name=x.full_name,  
