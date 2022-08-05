@@ -1,6 +1,6 @@
 from fastapi import FastAPI, Depends, HTTPException
 from typing import List
-from schemas import BaseAlumnos, BaseCarreras, BaseCursadas, BaseMaterias, CreateAlumno, CreateCarrera, CreateCursada, CreateMateria
+from schemas import BaseAlumnos, BaseCarreras, BaseCursadas, BaseCursadasAll, BaseMaterias, CreateAlumno, CreateCarrera, CreateCursada, CreateMateria
 from sqlalchemy.orm import Session
 import services as srv
 
@@ -118,12 +118,12 @@ async def create_cursadas(cursada: CreateCursada, db: Session = Depends(srv.get_
 
     return await srv.create_cursadas(cursada=cursada, db=db)
 
-@app.get('/cursadas', response_model=List[BaseCursadas], tags=['cursadas'])
+@app.get('/cursadas', response_model=List[BaseCursadasAll], tags=['cursadas'])
 async def get_cursadas(db = Depends(srv.get_db)):
 
     return await srv.get_all_cursadas(db=db)
 
-@app.get('/cursadas/{id}', response_model=BaseCursadas, tags=['cursadas'])
+@app.get('/cursadas/{id}', response_model=BaseCursadasAll, tags=['cursadas'])
 async def get_cursada(id: int ,db = Depends(srv.get_db)):
 
     return await srv.get_cursadas_byid(id=id, db=db)

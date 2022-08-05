@@ -1,12 +1,15 @@
 import datetime as dt
+from linecache import lazycache
 from sqlalchemy import DateTime, Column, ForeignKey, Integer, String, column
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, backref
+from sqlalchemy.ext.associationproxy import association_proxy
 
 from database import Base
 
 ## Model para la tabla Alumnos
 class Alumnos(Base):
     __tablename__ = 'alumnos'
+
     id = Column(Integer, primary_key=True, index=True)
     full_name = Column(String)
     last_name = Column(String)
@@ -39,6 +42,12 @@ class Cursadas(Base):
     id_materias = Column(Integer, ForeignKey('materias.id', ondelete='CASCADE'))
     dt_inscripcion = Column(DateTime, default=dt.datetime.utcnow)
     cursada_at = Column(Integer, default=1) ## CANTIDAD DE VECES CURSADA
+    
+    alumnos = relationship('Alumnos',backref=backref('cursadas',lazy=True))
+    carreras = relationship('Carreras',backref=backref('cursadas',lazy=True))
+    materias = relationship('Materias',backref=backref('cursadas',lazy=True))
 
-
+    alumno_name = association_proxy(target_collection='alumnos',attr='full_name')
+    carrera_name = association_proxy(target_collection='carreras',attr='name')
+    materia_name = association_proxy(target_collection='materias',attr='name')
 

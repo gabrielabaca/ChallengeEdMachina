@@ -2,13 +2,14 @@ from datetime import datetime
 from typing import List
 from fastapi import Depends, HTTPException
 from database import engine, Base, SessionLocal
-from schemas import BaseAlumnos, BaseCarreras, BaseCursadas, BaseMaterias, CreateAlumno, CreateCarrera, CreateCursada, CreateMateria
+from schemas import BaseAlumnos, BaseCarreras, BaseMaterias, CreateAlumno, CreateCarrera, CreateMateria, BaseCursadas, CreateCursada, BaseCursadasAll
 from sqlalchemy.orm import Session
 import models as models
 import random
 
 ## UTILIDADES
 def create_tables():
+    Base.metadata.drop_all(bind=engine)
     return Base.metadata.create_all(bind=engine)
 
 def get_db():
@@ -132,7 +133,9 @@ async def create_alumnos(alumno: CreateAlumno, db: Session) -> BaseAlumnos:
     return BaseAlumnos.from_orm(alumno)
 
 async def get_all_alumnos(db:Session):
-    
+    print(list(db.query(models.Alumnos).first().cursadas)[0].carreras.name)
+    return list(db.query(models.Alumnos).all())
+    '''
     alumnos = []
     for x in db.query(models.Alumnos).all():
         cursadas = db.query(models.Cursadas).filter(models.Cursadas.id_alumnos == x.id)
@@ -151,10 +154,10 @@ async def get_all_alumnos(db:Session):
             )
     
     return list(alumnos)
-
+    '''
 async def get_alumno_byid(id: int, db:Session) ->BaseAlumnos:
-    data = db.query(models.Alumnos).filter(models.Alumnos.id == id).first()
-    
+    return db.query(models.Alumnos).filter(models.Alumnos.id == id).first()
+    '''
     if data is None:
         raise HTTPException(status_code=404, detail='Alumno not found')
 
@@ -172,7 +175,7 @@ async def get_alumno_byid(id: int, db:Session) ->BaseAlumnos:
             )
             
     return alumno
-    
+    '''
 async def delete_alumno(id: int, db: Session):
 
     alumno = db.query(models.Alumnos).filter(models.Alumnos.id == id).first()
@@ -308,22 +311,22 @@ async def create_cursadas(cursada: CreateCursada, db: Session) -> BaseCursadas:
 
     return BaseCursadas.from_orm(cursada)
 
-async def get_all_cursadas(db: Session) -> list[BaseCursadas]:
+async def get_all_cursadas(db: Session) -> list[BaseCursadasAll]:
     cursadas = db.query(models.Cursadas).all()
-    return list(map(BaseCursadas.from_orm, cursadas))
+    return list(map(BaseCursadasAll.from_orm, cursadas))
 
-async def get_cursadas_byalumno(id: int, db:Session) -> BaseCursadas:
+async def get_cursadas_byalumno(id: int, db:Session) -> BaseCursadasAll:
     cursada = db.query(models.Cursadas).filter(models.Cursadas.id_alumnos == id)
-    return BaseCursadas.from_orm(cursada)
+    return BaseCursadasAll.from_orm(cursada)
 
-async def get_cursadas_byid(id: int, db: Session) -> BaseCursadas:
+async def get_cursadas_byid(id: int, db: Session) -> BaseCursadasAll:
 
     cursada = db.query(models.Cursadas).filter(models.Cursadas.id == id).first()
 
     if cursada is None:
         raise HTTPException(status_code=404, detail='Cursada not found')
 
-    return BaseCursadas.from_orm(cursada)
+    return BaseCursadasAll.from_orm(cursada)
 
 async def delete_cursada(id: int, db: Session):
 
